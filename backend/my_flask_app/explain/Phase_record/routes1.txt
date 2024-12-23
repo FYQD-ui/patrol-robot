@@ -1,0 +1,51 @@
+from flask import Blueprint, jsonify, request
+
+from Crypto.Cipher import AES
+import base64
+
+# 创建蓝图
+main_blueprint = Blueprint('main', __name__)
+
+# 定义密钥（确保和前端密钥一致）
+secret_key = 'MySecret_key_123'  # AES 密钥需要16字节长度
+
+
+# 解密函数
+#确保使用相同的加密模式（ECB）和填充方式（PKCS7）
+def decrypt(encrypted_data):
+    # 解码 Base64 编码的密文
+    encrypted_data = base64.b64decode(encrypted_data)
+
+    # 创建解密器，使用 AES ECB 模式
+    cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_ECB)
+
+    # 解密数据，并使用 PKCS7 去除填充
+    decrypted_data = cipher.decrypt(encrypted_data)
+    padding_len = decrypted_data[-1]  # 最后一个字节表示填充长度
+    decrypted_data = decrypted_data[:-padding_len]  # 去除填充
+
+    return decrypted_data.decode('utf-8')
+
+
+# 定义一个登录的路由
+@main_blueprint.route('/login', methods=['POST'])
+def login():
+    # 从请求中获取 JSON 数据
+    data = request.get_json()
+    encrypted_username = data.get('username')  # 获取用户名
+    encrypted_password = data.get('password')  # 获取密码
+
+    # 打印加密后的用户名和密码
+    print(f"加密后的用户名: {encrypted_username}")
+    print(f"加密后的密码: {encrypted_password}")
+
+    # 解密用户名和密码
+    username = decrypt(encrypted_username)
+    password = decrypt(encrypted_password)
+
+    # 在控制台打印用户名和密码（仅用于演示，实际应用中请勿这样做）
+    print(f"收到的用户名: {username}")
+    print(f"收到的密码: {password}")
+
+    # 返回一个 JSON 响应，告知客户端数据已接收
+    return jsonify({"message": "登录信息已接收"})

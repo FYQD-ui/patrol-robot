@@ -1,0 +1,7 @@
+flask
+flask-cors
+mysql-connector-python
+pycryptodome
+ultralytics
+opencv-python-headless
+pillow

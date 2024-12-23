@@ -1,0 +1,39 @@
+后端代码 app/routes.py
+添加一个新的路由来接收前端发送的用户名和密码，并在控制台中打印出来。确保 Flask 应用中已经注册该路由
+获取数据：
+使用 request.get_json() 方法获取 JSON 格式的请求数据。
+data.get('username') 和 data.get('password') 分别提取用户名和密码。
+打印数据：
+使用 print 在控制台打印用户名和密码。注意：实际应用中请勿在控制台中输出敏感信息。
+返回响应：
+使用 jsonify 生成 JSON 响应并返回给客户端。
+
+控制台输出"127.0.0.1 - - [08/Oct/2024 21:04:18] "OPTIONS /login HTTP/1.1" 200 -"
+解释:浏览器在执行跨域请求时自动发送的一个“预检”请求，用来询问服务器是否允许接下来的实际请求（比如 POST 请求）。这是跨域资源共享（CORS）的一部分。
+返回 200 状态码：表示服务器允许接下来的请求。这只是预检的成功，后续应该会有实际的 POST /login 请求发送到服务器。
+处理跨域问题：如果 POST /login 请求没有响应，则可能需要设置 CORS 允许跨域请求
+操作：在 Flask 应用中启用 CORS： 修改 app/__init__.py，引入并应用 CORS：
+     from flask_cors import CORS
+     def create_app():
+     CORS(app)  # 启用 CORS，允许跨域请求
+
+//对前端的加密数据进行解密
+# 定义密钥（确保和前端密钥一致）
+#解密函数
+def decrypt(encrypted_data):
+    # 解码 Base64 编码的密文
+    encrypted_data = base64.b64decode(encrypted_data)
+
+    # 创建解密器，使用 AES ECB 模式
+    cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_ECB)
+
+    # 解密数据，并使用 PKCS7 去除填充
+    decrypted_data = cipher.decrypt(encrypted_data)
+    padding_len = decrypted_data[-1]  # 最后一个字节表示填充长度
+    decrypted_data = decrypted_data[:-padding_len]  # 去除填充
+
+    return decrypted_data.decode('utf-8')
+
+说明:前端和后端都使用 ECB 模式和 PKCS7 填充，确保 AES 加密解密的模式和填充方式一致。
+    后端解密时手动去除填充部分，确保解密得到的明文数据能正常解析。
+    以上可以避免 UnicodeDecodeError错误
